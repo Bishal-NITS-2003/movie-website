@@ -4,10 +4,27 @@ import axios from "axios";
 import NavBar from "../components/navbar";
 import Footer from "../components/footer";
 
-const youtube_key = process.env.REACT_APP_YOUTUBE_API_KEY;
+function shareLink() {
+  const url = window.location.href;
+  const title = document.title;
+
+  if (navigator.share) {
+    navigator
+      .share({
+        title: title,
+        url: url,
+      })
+      .then(() => console.log("Successfully shared"))
+      .catch((error) => console.error("Error sharing", error));
+  } else {
+    navigator.clipboard
+      .writeText(url)
+      .then(() => alert("Link copied to clipboard!"))
+      .catch((err) => console.error("Could not copy text: ", err));
+  }
+}
 
 async function searchYouTube(query) {
-  console.log("jgyghfsghfsd " + process.env.REACT_APP_YOUTUBE_API_KEY);
   try {
     const response = await axios.get(
       "https://www.googleapis.com/youtube/v3/search",
@@ -15,7 +32,7 @@ async function searchYouTube(query) {
         params: {
           part: "snippet",
           q: query,
-          key: process.env.REACT_APP_YOUTUBE_API_KEY,
+          key: "AIzaSyBZXWWLyNiZvEq3o60t4-zw84qFVPJNUzw",
           maxResults: 1,
           type: "video",
         },
@@ -44,6 +61,7 @@ function Details() {
   const query = `${decodedTitle} trailer`;
 
   const [movie, setMovie] = React.useState(null);
+  const [hover, setHover] = React.useState(false);
   const [videoID, setVideoID] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
@@ -76,8 +94,18 @@ function Details() {
     fetchVideoID();
   }, [decodedTitle, year, query]);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="text-white h1 d-flex justify-content-center">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="text-white h1 fs-1 d-flex justify-content-center">
+        Error: {error}
+      </div>
+    );
 
   return (
     <div>
@@ -92,13 +120,24 @@ function Details() {
           </div>
           <div className="col-1 d-flex align-items-center">
             <svg
-              className="p-2 border border-1 rounded"
+              onMouseOver={() => setHover(true)}
+              onMouseOut={() => setHover(false)}
+              onClick={shareLink}
+              className="p-2 border border-1 rounded bi bi-share-fill"
               xmlns="http://www.w3.org/2000/svg"
               width="30"
               height="30"
               fill="#ffffff"
-              className="bi bi-share-fill"
               viewBox="0 0 16 16"
+              style={
+                hover
+                  ? {
+                      cursor: "pointer",
+                    }
+                  : {
+                      textDecoration: "none",
+                    }
+              }
             >
               <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5" />
             </svg>
@@ -151,12 +190,11 @@ function Details() {
                     {movie.imdbRating}
                   </p>
                   <svg
-                    className="mx-2"
+                    className="mx-2 bi bi-star-fill"
                     xmlns="http://www.w3.org/2000/svg"
                     width="15"
                     height="15"
                     fill="white"
-                    className="bi bi-star-fill"
                     viewBox="0 0 16 16"
                   >
                     <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
@@ -187,6 +225,14 @@ function Details() {
                 <p className="text-white">
                   <strong>Actors: </strong> {movie.Actors}
                 </p>
+                <hr className="my-2" style={{ color: "white" }} />
+                <a
+                  href={"https://www.imdb.com/title/" + movie.imdbID}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Click to know more
+                </a>
               </div>
             </div>
           </div>

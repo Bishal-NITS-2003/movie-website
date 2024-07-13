@@ -32,7 +32,7 @@ async function searchYouTube(query) {
         params: {
           part: "snippet",
           q: query,
-          key: "AIzaSyBZXWWLyNiZvEq3o60t4-zw84qFVPJNUzw",
+          key: process.env.REACT_APP_YOUTUBE_API_KEY,
           maxResults: 1,
           type: "video",
         },
